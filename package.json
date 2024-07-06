@@ -1,0 +1,16 @@
+{
+  "name": "youtube-clone-backend",
+  "version": "1.0.0",
+  "description": "Backend code for a youtube like app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "backend",
+    "youtube",
+    "clone"
+  ],
+  "author": "om patil",
+  "license": "ISC"
+}
