@@ -18,6 +18,8 @@ connectDB().then(() => {
   }).catch((err) => {
     console.error(`Failed to connect to MongoDB: ${err}`);
   });
+
+  
 /*
 !First Approach
 const connectDB = async () => {
