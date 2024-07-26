@@ -38,9 +38,17 @@ const userSchema = new mongoose.Schema({
         default: "default_avatar.jpg",
         required: true,
     },
+    avatarId: {
+        type: String,
+        required: true,
+    },
     coverImage: {
         type: String,
         default: "default_cover.jpg",
+    },
+    coverId: {
+        type: String,
+        required: true,
     },
     password: {
         type: String,

@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
@@ -60,7 +60,9 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
         password,
         avatar: avatarResponse.secure_url,
+        avatarId: avatarResponse.public_id,
         coverImage: coverImageResponse?.secure_url || "",
+        coverId: coverImageResponse?.public_id || "",
         refreshToken: ""
     })
 
@@ -224,25 +226,50 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
-    if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required")
+    if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required");
+    console.log("req.user: " + req.user);
+
+    const currentUser = await User.findById(req.user._id);
+    const oldAvatarId = currentUser.avatarId;
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-    if (!avatar) throw new ApiError(400, "Couldnt update avatar")
-    const user = await User.findByIdAndUpdate(req.user._id, {$set: {avatar: avatar.secure_url}}, {new: true}).select("-password");
+    if (!avatar) throw new ApiError(400, "Couldn't update avatar");
 
-    return res.status(200).json(new ApiResponse(200, user, "Updated avatar successfully" ));
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: avatar.secure_url,
+                avatarId: avatar.public_id
+            }
+        },
+        { new: true }
+    ).select("-password");
+    if (oldAvatarId) {
+        await deleteFromCloudinary(oldAvatarId)
+    }
 
+    return res.status(200).json(new ApiResponse(200, user, "Updated avatar successfully"));
 });
+
+
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path;
     if (!coverImageLocalPath) throw new ApiError(400, "Cover Image file is required")
 
+    const currentUser = await User.findById(req.user._id);
+    const oldCoverId = currentUser.coverId;
+
     const cover = await uploadOnCloudinary(coverImageLocalPath);
     if (!cover) throw new ApiError(400, "Couldnt update cover image")
-    const user = await User.findByIdAndUpdate(req.user._id, {$set: {coverImage: cover.secure_url}}, {new: true}).select("-password");
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: { coverImage: cover.secure_url, coverId: cover.public_id } }, { new: true }).select("-password");
 
-    return res.status(200).json(new ApiResponse(200, user, "Updated cover image successfully" ));
+    if(oldCoverId) {
+        await deleteFromCloudinary(oldCoverId)
+    }
+
+    return res.status(200).json(new ApiResponse(200, user, "Updated cover image successfully"));
 });
 
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrectPassword, getCurrectUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage}
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrectPassword, getCurrectUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage }

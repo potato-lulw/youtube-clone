@@ -10,13 +10,7 @@ const uploadOnCloudinary = async (filePath) => {
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET,
     });
-    // console.log('Cloudinary Configuration:', cloudinary.config());
-    // console.log({
-    //     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    //     api_key: process.env.CLOUDINARY_API_KEY,
-    //     api_secret: process.env.CLOUDINARY_API_SECRET,
 
-    // });
     try {
         if (!filePath) throw new Error("File path is required");
 
@@ -40,4 +34,30 @@ const uploadOnCloudinary = async (filePath) => {
     }
 };
 
-export { uploadOnCloudinary };
+
+const deleteFromCloudinary = async (public_id) => {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    if (!public_id) {
+        throw new Error("Public id is required");
+    }
+
+    try {
+        if (!public_id) throw new Error("Public ID is required");
+
+        const result = await cloudinary.uploader.destroy(public_id);
+
+        if (result) {
+            console.log("File deleted successfully from Cloudinary: ", result);
+            return result;
+        }
+    } catch (error) {
+        console.error("Couldn't delete from cloudinary: " + error.message);
+    }
+}
+
+export { uploadOnCloudinary, deleteFromCloudinary };
