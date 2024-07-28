@@ -382,7 +382,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User does not exist");
     }
 
-    return res.status(200).json(new ApiResponse(200, user, "User watch history fetched"));
+    return res.status(200).json(new ApiResponse(200, user[0].watchHistory, "User watch history fetched"));
 })
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrectPassword, getCurrectUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory }
